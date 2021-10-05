@@ -1,4 +1,5 @@
 // An implementation of the `tee` command
+// Author: SCC
 
 #include <stdio.h>
 #include <string.h>

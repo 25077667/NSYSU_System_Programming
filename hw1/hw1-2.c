@@ -1,3 +1,6 @@
+// An implementation of the `cp` command
+// Author: SCC
+
 #include <stdio.h>
 #include <unistd.h>
 
