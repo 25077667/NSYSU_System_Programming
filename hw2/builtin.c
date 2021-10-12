@@ -8,25 +8,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "shell.h"
 
 /****************************************************************************/
 /* builtin function definitions                                             */
 /****************************************************************************/
 
-/* Fill in code. */
-#define __DECLARE_bi(func) \
-    static inline void _bi_##func(const char **argv) { exit(0); }
-
-__DECLARE_bi(logout);
-__DECLARE_bi(bye);
-__DECLARE_bi(exit);
-__DECLARE_bi(quit);
-__DECLARE_bi(echo);
-
 
 /* "echo" command.  Do not print final <CR> if "-n" encountered. */
-static void bi_echo(const char **argv)
+static void bi_echo(char **argv)
 {
     int i = 0;
     if (argv[1] && __glibc_unlikely(strcmp(argv[1], "-n") == 0)) {
@@ -38,18 +29,43 @@ static void bi_echo(const char **argv)
     }
     /* Fill in code. */
 }
+
+/* Fill in code. */
+#define __DECLARE_bi(func)                     \
+    static inline void _bi_##func(char **argv) \
+    {                                          \
+        free_argv(argv);                       \
+        exit(0);                               \
+    }
+
+__DECLARE_bi(logout);
+__DECLARE_bi(bye);
+__DECLARE_bi(exit);
+__DECLARE_bi(quit);
+
+static void _bi_chdir(char **argv)
+{
+    static char cwd[4096];
+    const unsigned int path_len = strlen(getcwd(cwd, sizeof(cwd)));
+    const char *arg = argv[1];
+    if (arg[0] == '.')
+        strncat(cwd + path_len, arg, strlen(arg));
+
+    chdir(arg);
+}
+
 /****************************************************************************/
 /* lookup table                                                             */
 /****************************************************************************/
 
 static struct cmd {
-    char *keyword;                /* When this field is argv[0] ... */
-    void (*do_it)(const char **); /* ... this function is executed. */
-} inbuilts[6] = {
+    char *keyword;          /* When this field is argv[0] ... */
+    void (*do_it)(char **); /* ... this function is executed. */
+} inbuilts[7] = {
     /* Fill in code. */
-    {"bye", _bi_bye},   {"logout", _bi_logout},
-    {"exit", _bi_exit}, {"quit", _bi_quit},
-    {"echo", bi_echo},  {NULL, NULL} /* NULL terminated. */
+    {"bye", _bi_bye},   {"logout", _bi_logout}, {"exit", _bi_exit},
+    {"quit", _bi_quit}, {"echo", bi_echo},      {"cd", _bi_chdir},
+    {NULL, NULL} /* NULL terminated. */
 };
 
 
@@ -78,6 +94,6 @@ int is_builtin(char *cmd)
 /* Execute the function corresponding to the builtin cmd found by is_builtin. */
 int do_builtin(char **argv)
 {
-    this->do_it((const char **) argv);
+    this->do_it(argv);
     return 0;
 }
