@@ -6,7 +6,10 @@ all: dep
 	strip ${TARGET}
 
 dep: *.c *.h
-	gcc ${FLAGS} shell.h builtin.c parse.c run_command.c is_background.c -c
+	gcc ${FLAGS} -g shell.h builtin.c parse.c run_command.c is_background.c -c
+
+dbg: dep
+	gcc ${FLAGS} -g *.o shell.c -o ${TARGET}
 
 check: all
 	valgrind --verbose --leak-check=full --show-leak-kinds=all ./${TARGET}

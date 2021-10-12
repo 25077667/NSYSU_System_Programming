@@ -3,6 +3,7 @@
  * Initialise a vector big enough
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,36 +14,30 @@ char **parse(char *line)
 {
     static const char delim[] = " \t\n"; /* SPACE or TAB or NL */
     unsigned int count = 0;
-    char *token = NULL;
-    char **new_argv = NULL;
     enum { ARGV_DEFAULT_SIZE = 256 };
 
-    /* Nothing entered. */
-    if (line == NULL) {
-        return NULL;
-    }
+    /* Strip spaces */
+    while (isspace(*line))
+        line++;
 
+    if ((*line) == 0)
+        return NULL;
     /* Init strtok with commandline, then get first token.
      * Return NULL if no tokens in line.
      *
      * Fill in code.
      */
-    token = strtok(line, delim);
+    char *token = strtok(line, delim);
+    if (!token)
+        return NULL;
 
     /* Create an array with room for first token.
      *
      * Fill in code.
      */
 
-    new_argv = (char **) malloc(sizeof(char *) * ARGV_DEFAULT_SIZE);
+    char **new_argv = (char **) malloc(sizeof(char *) * ARGV_DEFAULT_SIZE);
     static unsigned int new_argv_cap = ARGV_DEFAULT_SIZE;
-    size_t tok_len = strlen(token);
-    char *room = (char *) malloc(tok_len + 1);
-    strncpy(room, token, tok_len);
-    room[tok_len] = '\0';
-    new_argv[count++] = room;
-    printf("[%d] : %s\n", count - 1, new_argv[count - 1]);
-
 
     /* While there are more tokens...
      *
@@ -52,7 +47,7 @@ char **parse(char *line)
      *
      * Fill in code.
      */
-    while (!!(token = strtok(NULL, delim))) {
+    do {
         size_t tok_len = strlen(token);
         char *new_room = (char *) malloc(tok_len + 1);
         strncpy(new_room, token, tok_len);
@@ -63,7 +58,7 @@ char **parse(char *line)
         }
         new_argv[count++] = new_room;
         printf("[%d] : %s\n", count - 1, new_argv[count - 1]);
-    }
+    } while (!!(token = strtok(NULL, delim)));
 
 
     /* Null terminate the array and return it.
