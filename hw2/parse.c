@@ -28,8 +28,6 @@ char **parse(char *line)
      * Fill in code.
      */
     char *token = strtok(line, delim);
-    if (!token)
-        return NULL;
 
     /* Create an array with room for first token.
      *

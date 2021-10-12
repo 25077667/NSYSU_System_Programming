@@ -35,8 +35,6 @@ void run_command(char **myArgv)
     char buf[1024];
     /*
      *   Rewrite this code.
-     *!! In the origin code, switch default is put before case 0???
-     *!! What's happend? Are you really can write a program in C.
      */
 
     const int do_wait = !(is_background(myArgv));
