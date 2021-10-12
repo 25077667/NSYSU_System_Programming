@@ -31,8 +31,6 @@ static inline void _parent_wait(pid_t pid)
 
 void run_command(char **myArgv)
 {
-    int fd[2];
-    char buf[1024];
     /*
      *   Rewrite this code.
      */
@@ -46,23 +44,15 @@ void run_command(char **myArgv)
         myArgv[i - 1] = NULL;
     }
 
-    pipe(fd);
     pid_t pid = fork();
     switch (pid) {
     case 0:  // Child process
-        close(fd[1]);
-        dup2(fd[0], STDIN_FILENO);
-        close(fd[0]);
         execvp(myArgv[0], myArgv);
         exit(errno);
     case -1:  // Fork failed
         perror("fork");
         exit(errno);
     default:  // Parent process
-        close(fd[0]);
-        while(read(fd[1], buf, 1024) != EOF)
-            printf("%s", buf);
-        close(fd[1]);
         if (do_wait)
             _parent_wait(pid);
         break;

@@ -13,7 +13,6 @@
 char **parse(char *line)
 {
     static const char delim[] = " \t\n"; /* SPACE or TAB or NL */
-    unsigned int count = 0;
     enum { ARGV_DEFAULT_SIZE = 256 };
 
     /* Strip spaces */
@@ -35,7 +34,7 @@ char **parse(char *line)
      */
 
     char **new_argv = (char **) malloc(sizeof(char *) * ARGV_DEFAULT_SIZE);
-    static unsigned int new_argv_cap = ARGV_DEFAULT_SIZE;
+    unsigned int new_argv_cap = ARGV_DEFAULT_SIZE;
 
     /* While there are more tokens...
      *
@@ -45,6 +44,7 @@ char **parse(char *line)
      *
      * Fill in code.
      */
+    unsigned int count = 0;
     do {
         size_t tok_len = strlen(token);
         char *new_room = (char *) malloc(tok_len + 1);
