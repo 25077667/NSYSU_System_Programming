@@ -96,7 +96,7 @@ struct Proc {
 
 void uid2user(uid_t uid, char *name, int len)
 {
-#define NUMUN 128
+    enum { NUMUN = 128 };
     static struct un_ {
         uid_t uid;
         char name[32];
