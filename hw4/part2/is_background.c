@@ -5,17 +5,20 @@
 #include <stdio.h>
 #include "shell.h"
 
-int is_background(char ** myArgv) {
+int is_background(char **myArgv)
+{
+    if (*myArgv == NULL)
+        return 0;
 
-  	if (*myArgv == NULL)
-    	return 0;
-
-  	/* Look for "&" in myArgv, and process it.
-  	 *
-	 *	- Return TRUE if found.
-	 *	- Return FALSE if not found.
-	 *
-	 * Fill in code.
-	 */
-
+    /* Look for "&" in myArgv, and process it.
+     *
+     *	- Return TRUE if found.
+     *	- Return FALSE if not found.
+     *
+     * Fill in code.
+     */
+    int i = -1;
+    while (myArgv[++i] && strcmp(myArgv[i], "&") != 0)
+        ;
+    return !!(myArgv[i]);
 }

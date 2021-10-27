@@ -3,53 +3,44 @@
  * Initialise a vector big enough
  */
 
+#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include "shell.h"
 
 /* Parse a commandline string into an argv array. */
-char ** parse(char *line) {
+char **parse(char *line)
+{
+    static const char delim[] = " \t\n";
+    enum { ARGV_DEFAULT_SIZE = 256 };
 
-  	static char delim[] = " \t\n"; /* SPACE or TAB or NL */
-  	int count = 0;
-  	char * token;
-  	char **newArgv;
+    /* Strip spaces */
+    while (isspace(*line))
+        line++;
+    if ((*line) == 0)
+        return NULL;
 
-  	/* Nothing entered. */
-  	if (line == NULL || strcmp(line,"\n")==0) {
-    	return NULL;
-  	}
+    char *token = strtok(line, delim);
+    char **new_argv = (char **) malloc(sizeof(char *) * ARGV_DEFAULT_SIZE);
+    unsigned int new_argv_cap = ARGV_DEFAULT_SIZE;
 
-  	/* Init strtok with commandline, then get first token.
-     * Return NULL if no tokens in line.
-	 *
-	 * Fill in code.
-     */
+    unsigned int count = 0;
+    do {
+        size_t tok_len = strlen(token);
+        char *new_room = (char *) malloc(tok_len + 1);
+        strncpy(new_room, token, tok_len);
+        new_room[tok_len] = '\0';
+        if (__glibc_unlikely(count >= new_argv_cap)) {
+            new_argv =
+                realloc(new_argv, new_argv_cap <<= 1);  // Double the size
+        }
+        new_argv[count++] = new_room;
+        printf("[%d] : %s\n", count - 1, new_argv[count - 1]);
+    } while (!!(token = strtok(NULL, delim)));
 
-
-  	/* Create array with room for first token.
-  	 *
-	 * Fill in code.
-	 */
-
-
-  	/* While there are more tokens...
-	 *
-	 *  - Get next token.
-	 *	- Resize array.
-	 *  - Give token its own memory, then install it.
-	 * 
-  	 * Fill in code.
-	 */
-
-
-  	/* Null terminate the array and return it.
-	 *
-  	 * Fill in code.
-	 */
-
-  	return newArgv;
+    new_argv[count] = NULL;
+    return new_argv;
 }
 
 
@@ -57,13 +48,11 @@ char ** parse(char *line) {
  * Free memory associated with argv array passed in.
  * Argv array is assumed created with parse() above.
  */
-void free_argv(char **oldArgv) {
+void free_argv(char **oldArgv)
+{
+    unsigned int i = 0;
+    while (oldArgv[i])
+        free(oldArgv[i++]);
 
-	int i = 0;
-
-	/* Free each string hanging off the array.
-	 * Free the oldArgv array itself.
-	 *
-	 * Fill in code.
-	 */
+    free(oldArgv);
 }

@@ -4,34 +4,33 @@
 
 #define LONGLINE 255
 
+#include "shell.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "shell.h"
 
-int main(int argc, char* argv[]) {
-	char line[LONGLINE];
-  	char **myArgv;
+int main(int argc, char *argv[])
+{
+    char line[LONGLINE];
+    char **myArgv;
 
-  	fputs("myshell -> ",stdout);
-  	while (fgets(line,LONGLINE,stdin)) {
+    fputs("myshell -> ", stdout);
+    while (fgets(line, LONGLINE, stdin)) {
+        /* Create argv array based on commandline. */
+        if ((myArgv = parse(line)) != NULL) {
+            /* If command is recognized as a builtin, do it. */
+            if (is_builtin(myArgv[0])) {
+                do_builtin(myArgv);
 
-    	/* Create argv array based on commandline. */
-    	if ((myArgv = parse(line))!= NULL) {
+                /* Non-builtin command. */
+            } else {
+                run_command(myArgv);
+            }
 
-      		/* If command is recognized as a builtin, do it. */
-      		if (is_builtin(myArgv[0])) {
-        		do_builtin(myArgv);
+            /* Free argv array. */
+            free_argv(myArgv);
+        }
 
-			/* Non-builtin command. */
-			} else {
-				run_command(myArgv);
-			}
-
-			/* Free argv array. */
-			free_argv(myArgv);
-		}
-
-    	fputs("myshell -> ",stdout);
-	}
-  	exit(0);
+        fputs("myshell -> ", stdout);
+    }
+    exit(0);
 }
