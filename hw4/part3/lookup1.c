@@ -3,29 +3,33 @@
  * 	         of fixed length records. The file name is passed
  *	         as resource.
  */
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "dict.h"
 
-int lookup(Dictrec * sought, const char * resource) {
-	Dictrec dr;
-	static FILE * in;
-	static int first_time = 1;
+int lookup(Dictrec *sought, const char *resource)
+{
+    if (strlen(sought->word) == 1) {
+        return UNAVAIL;
+    }
 
-	if (first_time) { 
-		first_time = 0;
-		/* open up the file
-		 *
-		 * Fill in code. */
-	}
+    FILE *res_rec = fopen(resource, "r");
 
-	/* read from top of file, looking for match
-	 *
-	 * Fill in code. */
-	rewind(in);
-	while(________) {
-		/* Fill in code. */
-		return FOUND;
-	}
-
-	return NOTFOUND;
+    // Traverse the whole resource file.
+    while (!feof(res_rec)) {
+        char *buf = NULL;
+        size_t __size = 0;
+        ssize_t len = getline(&buf, &__size, res_rec);
+        if (len == -1)  // empty line
+            continue;
+        const char *word = strtok(buf, " ");
+        if (!strcmp(word, sought->word)) {  // found
+            strcpy(sought->text, strtok(NULL, "\n"));
+            fclose(res_rec);
+            return FOUND;
+        }
+    }
+    fclose(res_rec);
+    return NOTFOUND;
 }

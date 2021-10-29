@@ -16,26 +16,27 @@
 #include <stdlib.h>
 #include "dict.h"
 
-int main(int argc, char **argv) {
-	Dictrec tryit;
+int main(int argc, char **argv)
+{
+    Dictrec tryit;
 
-	if (argc != 2) {
-		fprintf(stderr,"Usage : %s <resource>\n",argv[0]);
-		exit(errno);
-	}
+    if (argc != 2) {
+        fprintf(stderr, "Usage : %s <resource>\n", argv[0]);
+        exit(errno);
+    }
 
-	while(1) {
-		printf("What word do you want : ");
-		gets(tryit.word);
-		switch(lookup(&tryit,argv[1]) ) {
-			case FOUND:
-				printf("%s : %s\n",tryit.word,tryit.text);
-				break;
-			case NOTFOUND:
-				printf("%s : Not Found!\n",tryit.word) ;
-				break;
-			case UNAVAIL:
-				DIE(argv[1]);
-		}
-	}
+    while (1) {
+        printf("What word do you want : ");
+        Wunused(scanf("%s", tryit.word));
+        switch (lookup(&tryit, argv[1])) {
+        case FOUND:
+            printf("%s : %s\n", tryit.word, tryit.text);
+            break;
+        case NOTFOUND:
+            printf("%s : Not Found!\n", tryit.word);
+            break;
+        case UNAVAIL:
+            DIE(argv[1]);
+        }
+    }
 }
