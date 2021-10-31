@@ -4,57 +4,81 @@
 
 #include <errno.h>
 #include <signal.h>
-#include <stdio.h>
-#include <sys/types.h>
+#include <string.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "shell.h"
 
-void run_command(char **myArgv)
+static inline size_t cmd_num(const char **cmd)
 {
+    size_t num = 0;
+    while (*cmd++)
+        ++num;
+    return num;
+}
+
+void run_command(char **commands)
+{
+    size_t index = cmd_num((const char **) commands);
+    int fd[2], status;
     pid_t pid;
-    int stat;
-
-    /*
-     * Check for background processing.
-     * Do this before fork() as the "&" is removed from the argv array
-     * as a side effect.
-     */
-    int run_in_background = is_background(myArgv);
-
-    switch (pid = fork()) {
-    /* Error. */
-    case -1:
-        perror("fork");
-        exit(errno);
-
-    /* Parent. */
-    default:
-        if (run_in_background)
-            break;
-
-        waitpid(pid, &stat, 0); /* Wait for child to terminate. */
-        if (WIFEXITED(stat) && WEXITSTATUS(stat)) {
-            fprintf(stderr, "Child %d exited with error status %d: %s\n", pid,
-                    WEXITSTATUS(stat), (char *) strerror(WEXITSTATUS(stat)));
-
-        } else if (WIFSIGNALED(stat) && WTERMSIG(stat)) {
-            fprintf(stderr, "Child %d exited due to signal %d: %s\n", pid,
-                    WTERMSIG(stat), (char *) strsignal(WTERMSIG(stat)));
-        }
-        break;
-
-    /* Child. */
-    case 0:
-
-        /* Redirect input and update argv. */
-        if (redirect_in(myArgv))
-            fprintf(stderr, "Failed to redirect file in");
-
-        /* Redirect output and update argv. */
-        if (redirect_out(myArgv))
-            fprintf(stderr, "Failed to redirect file out");
-
-        pipe_and_exec(myArgv);
-        exit(errno);
+    /* Fork a child to execute commands */
+    if (!!(pid = fork())) { /* This is parent(aka. ./myshell) */
+        void *notWait = strchr(commands[index - 1], '&');
+        while (!notWait && waitpid(pid, &status, WUNTRACED | WCONTINUED) &&
+               !WIFEXITED(status) && !WIFSIGNALED(status))
+            ;
+        if (notWait)
+            printf("[%d]\n", pid);
+        return;
     }
+    /* All commands would be executed here
+     *
+     * For example:
+     * $ ls | cat | less
+     * Works like:
+     *
+     * .|   out          in   out          in   out          in
+     * /|     ____________      ____________      ____________
+     * m|    |            |    |            |    |            |
+     * y|    |            |    |            |    |            |
+     * s|----|    less    |--->|     cat    |--->|     ls     |
+     * h|    |            |    |            |    |            |
+     * e|    |____________|    |____________|    |____________|
+     * l|              ------------>     ------------>
+     * l|                  fork              fork
+     *
+     *
+     * Child's stdout to parent's stdin.
+     *
+     * And afterwards, kill all forked childs(commands).
+     */
+    while (--index) {
+        /* set all all pipe line */
+        if (pipe(fd) < 0)
+            handle_error("pipe");
+        pid = fork();
+        if (pid > 0) {
+            close(fd[1]);
+            dup2(fd[0], STDIN_FILENO);
+            close(fd[0]);
+            /* Last be piped process will leave first */
+            break;
+        } else if (pid == 0) {
+            close(fd[0]);
+            dup2(fd[1], STDOUT_FILENO);
+            close(fd[1]);
+        } else
+            handle_error("fork");
+    }
+
+    char **arg = getArgs(commands[index]);
+    redirect(arg);
+    if (execvp(arg[0], arg) < 0)
+        puts("Command not found!");
+
+    fflush(NULL);  // flush all
+    FREE_UNTIL_NULL(arg);
+    /* Kill all child process */
+    exit(errno);
 }
