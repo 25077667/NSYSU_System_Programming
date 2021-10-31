@@ -5,8 +5,9 @@
 
 static inline void __redirect_to(char **cmd, char mode)
 {
+    // '<' is 00111100, '>' is 00111110
     const int IO = (mode >> 1) & 1;
-    static const char *rw[] = {"r", "w"};
+    static const char *rw[] = {"r+", "w+"};
     int i = 0;
     char *tok = NULL;
     do {
@@ -29,9 +30,9 @@ static inline void __redirect_to(char **cmd, char mode)
     // "Erase" redirect (from/to) symbol and name
     // Concatnate the tail options
     char *trash1 = cmd[i - 1], *trash2 = cmd[i];
-    memcpy(cmd[i - 1], cmd[i + 1], j - i);
-    free(trash1);
-    free(trash2);
+    for (int k = i - 1; k < j - 1; ++k)
+        cmd[k] = cmd[k + 2];
+    free(trash1), free(trash2);
 }
 
 void redirect(char **cmd)
