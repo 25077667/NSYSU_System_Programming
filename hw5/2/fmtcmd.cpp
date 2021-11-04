@@ -4,6 +4,8 @@
 
 void format_cmd(char *cmd, const char *tok)
 {
+    if (!tok)
+        return;
     const std::string &s =
         std::string(" ") + std::string(tok) + std::string(" ");
     ::strncat(cmd, s.c_str(), s.length());

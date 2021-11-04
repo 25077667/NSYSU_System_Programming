@@ -52,6 +52,7 @@ DECLARE_TESTS(ls, r);
 DECLARE_TESTS(chmod, r);
 DECLARE_TESTS(bash, r);
 DECLARE_TESTS(rm, r);
+DECLARE_TESTS(date, r);
 
 int main(void)
 {
@@ -75,5 +76,6 @@ int main(void)
     printf("rm %s\n", filename);
     read_rm(filename, NULL);
 
+    read_date(NULL);
     return 0;
 }
