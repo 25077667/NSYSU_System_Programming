@@ -4,7 +4,6 @@
 // #include <stdio.h>
 
 #define PAGE_SIZE 4096
-#define TERM (void *) -1
 
 extern void format_cmd(char *cmd, const char *tok);
 #define FORMAT_CMD(cmd, tok) (format_cmd)(cmd, tok)
@@ -20,7 +19,7 @@ extern void format_cmd(char *cmd, const char *tok);
         char *tok = (char *) arg;                       \
         do {                                            \
             FORMAT_CMD(__cmd, tok);                     \
-        } while ((tok = va_arg(args, char *)) != TERM); \
+        } while ((tok = va_arg(args, char *)) != NULL); \
         /* ---------------------------------------- */; \
         FILE *f = popen(__cmd, #mode);                  \
         while (fread(buf, 1, PAGE_SIZE, f))             \
@@ -39,7 +38,7 @@ extern void format_cmd(char *cmd, const char *tok);
         char *tok = (char *) filename;                           \
         do {                                                     \
             FORMAT_CMD(__cmd, tok);                              \
-        } while ((tok = va_arg(args, char *)) != TERM);          \
+        } while ((tok = va_arg(args, char *)) != NULL);          \
         /* ---------------------------------------- */;          \
         FILE *f = popen(__cmd, #mode);                           \
         fwrite(buf, 1, len, f);                                  \
@@ -62,19 +61,19 @@ int main(void)
         "echo hello\n";
 
     printf("tee ```%s``` to file %s\n", ctx, filename);
-    write_tee(ctx, sizeof(ctx), filename, TERM);
+    write_tee(ctx, sizeof(ctx), filename, NULL);
 
     printf("ls:\n");
-    read_ls("-l", TERM);
+    read_ls("-l", NULL);
 
     printf("chmod %s %s\n", "u+x", filename);
-    read_chmod("u+x", filename, TERM);
+    read_chmod("u+x", filename, NULL);
 
     printf("Exec %s:\n", filename);
-    read_bash(filename, TERM);
+    read_bash(filename, NULL);
 
     printf("rm %s\n", filename);
-    read_rm(filename, TERM);
+    read_rm(filename, NULL);
 
     return 0;
 }
