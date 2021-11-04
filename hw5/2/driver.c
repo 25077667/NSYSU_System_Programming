@@ -63,11 +63,11 @@ int main(void)
     printf("tee ```%s``` to file %s\n", ctx, filename);
     write_tee(ctx, sizeof(ctx), filename, NULL);
 
+    printf("chmod %s %s\n", "700", filename);
+    read_chmod("700", filename, NULL);
+
     printf("ls:\n");
     read_ls("-l", NULL);
-
-    printf("chmod %s %s\n", "u+x", filename);
-    read_chmod("u+x", filename, NULL);
 
     printf("Exec %s:\n", filename);
     read_bash(filename, NULL);
