@@ -1,6 +1,5 @@
 #include "fmtcmd.hpp"
 #include <cstring>
-#include <exception>
 #include <string>
 
 void format_cmd(char *cmd, const char *tok)
