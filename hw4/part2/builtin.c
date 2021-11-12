@@ -90,6 +90,7 @@ static void bi_echo(const char **argv)
 
 static void bi_hostname(const char **argv)
 {
+    (void) argv;
     char name[256] = {0};
     gethostname(name, 256);
     printf("hostname: %s\n", name);
@@ -97,6 +98,7 @@ static void bi_hostname(const char **argv)
 
 static void bi_id(const char **argv)
 {
+    (void) argv;
     const unsigned int uid = getuid();
     struct passwd *pws;
     pws = getpwuid(uid);
@@ -108,6 +110,7 @@ static void bi_id(const char **argv)
 
 static void bi_pwd(const char **argv)
 {
+    (void) argv;
     char cwd[4096] = {0};
     strlen(getcwd(cwd, sizeof(cwd)));
     printf("%s\n", cwd);

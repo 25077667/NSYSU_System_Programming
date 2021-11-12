@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Werror -std=gnu11 -g
+CFLAGS = -Wall -Werror -Wextra -std=gnu11 -g
 OUT = myshell
 
 all: dep
