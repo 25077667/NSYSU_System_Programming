@@ -27,7 +27,7 @@
 enum { MSG_SIZE = 8192 };
 struct requestMsg {          /* Requests (client to server) */
     int clientId;            /* ID of client's message queue */
-    char pathname[MSG_SIZE]; /* File to be returned */
+    char pathname[PATH_MAX]; /* File to be returned */
 };
 #define REQ_MSG_SIZE                         \
     (offsetof(struct requestMsg, pathname) - \

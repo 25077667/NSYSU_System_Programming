@@ -58,6 +58,9 @@ int main(int argc, char *argv[])
     ssize_t totBytes = 0, numMsgs = -1;
     struct responseMsg resp = {.mtype = MT_DATA, .data = {0}};
     for (; resp.mtype; ++numMsgs) {
+        //! WARNING: The msgrcv libcall in glibc 2.31 in linux 5.13.0 might have
+        //! bugs for that the kernel cannot forward "binary" file which have
+        //! hole (null byte).
         ssize_t msgLen = msgrcv(clientId, &resp, MSG_SIZE, 0, 0);
         if (__glibc_unlikely(resp.mtype == MT_FAILURE)) {
             printf("%s\n", resp.data); /* Display msg from server */
