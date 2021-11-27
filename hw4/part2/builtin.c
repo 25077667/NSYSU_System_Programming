@@ -29,30 +29,34 @@ static void bi_hostname(const char **argv); /* "hostname" command. */
 static void bi_id(const char **argv);       /* "id" command shows user and group
                                                     of this process. */
 static void bi_pwd(const char **argv);      /* "pwd" command. */
-static void bi_quit(const char **argv);     /* quit/exit/logout/bye command. */
-
 
 /****************************************************************************/
 /* lookup table                                                             */
 /****************************************************************************/
+#define __DECLARE_bi_quit(func)                     \
+    static inline void bi_##func(const char **argv) \
+    {                                               \
+        FREE_UNTIL_NULL((char **) argv);            \
+        exit(0);                                    \
+    }
+__DECLARE_bi_quit(logout);
+__DECLARE_bi_quit(bye);
+__DECLARE_bi_quit(exit);
+__DECLARE_bi_quit(quit);
+
+#define COMMAND(cmd)   \
+    {                  \
+#cmd, bi_##cmd \
+    }
 
 static struct cmd {
     char *keyword;                /* When this field is argv[0] ... */
     void (*do_it)(const char **); /* ... this function is executed. */
 } inbuilts[] = {
-    {"builtin", bi_builtin}, /* List of (argv[0], function) pairs. */
-
-    /* Fill in code. */
-    {"echo", bi_echo},
-    {"quit", bi_quit},
-    {"exit", bi_quit},
-    {"bye", bi_quit},
-    {"logout", bi_quit},
-    {"cd", bi_cd},
-    {"pwd", bi_pwd},
-    {"id", bi_id},
-    {"hostname", bi_hostname},
-    {NULL, NULL} /* NULL terminated. */
+    COMMAND(builtin), /* List of (argv[0], function) pairs. */
+    COMMAND(echo),    COMMAND(quit), COMMAND(exit), COMMAND(bye),
+    COMMAND(logout),  COMMAND(cd),   COMMAND(pwd),  COMMAND(hostname),
+    COMMAND(id),      {NULL, NULL} /* NULL terminated. */
 };
 
 // Guarantee the argv is formatted in "builtin %s"
@@ -100,8 +104,7 @@ static void bi_id(const char **argv)
 {
     (void) argv;
     const unsigned int uid = getuid();
-    struct passwd *pws;
-    pws = getpwuid(uid);
+    const struct passwd *const pws = getpwuid(uid);
     const unsigned int gid = pws->pw_gid;
 
     printf("UserID = %d(%s), GroupID = %d(%s)\n", uid, pws->pw_name, gid,
@@ -115,13 +118,6 @@ static void bi_pwd(const char **argv)
     strlen(getcwd(cwd, sizeof(cwd)));
     printf("%s\n", cwd);
 }
-
-static void bi_quit(const char **argv)
-{
-    FREE_UNTIL_NULL((char **) argv);
-    exit(0);
-}
-
 
 /****************************************************************************/
 /* is_builtin and do_builtin                                                */
