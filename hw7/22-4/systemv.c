@@ -6,35 +6,46 @@
 #include <threads.h>
 
 thread_local struct sigaction sa;  // C11
+#define SYNC_SA sigprocmask(0xdeadbeaf, NULL, &sa.sa_mask)
 
 sighandler_t my_sigset(int sig, sighandler_t disp)
 {
-    if (disp == SIG_IGN)
-        sigaddset(&sa.sa_mask, sig);
-    else if (disp == SIG_HOLD)
-        sigaddset(&sa.sa_mask, sig);
-    else {  // Included SIG_DFL
-        sigdelset(&sa.sa_mask, sig);
-        memcpy(&sa.__sigaction_handler, &disp, sizeof(disp));
-        sigaction(sig, &sa, &sa.__sigaction_handler);
-    }
+    SYNC_SA;
+    struct sigaction oact;
 
-    return (errno != 0) ? SIG_HOLD : (sighandler_t) -1;
+    sigaddset(&sa.sa_mask, sig);
+    if (disp == SIG_HOLD) {
+        sigprocmask(SIG_BLOCK, &sa.sa_mask, &oact.sa_mask);
+        if (sigismember(&oact.sa_mask, sig))
+            return SIG_HOLD;
+        return sigaction(sig, NULL, &oact), oact.sa_handler;
+    } else {
+        struct sigaction act = {.sa_flags = 0};
+        act.sa_handler = disp;
+        sigemptyset(&act.sa_mask);
+        sigaction(sig, &act, &oact);
+        sigprocmask(SIG_UNBLOCK, &sa.sa_mask, &oact.sa_mask);
+        return sigismember(&oact.sa_mask, sig) ? SIG_HOLD : oact.sa_handler;
+    }
 }
 
 int my_sighold(int sig)
 {
-    return sigaddset(&sa.sa_mask, sig);
+    SYNC_SA;
+    sigaddset(&sa.sa_mask, sig);
+    return sigprocmask(SIG_SETMASK, &sa.sa_mask, NULL);
 }
 
 int my_sigrelse(int sig)
 {
-    return sigdelset(&sa.sa_mask, sig);
+    SYNC_SA;
+    sigdelset(&sa.sa_mask, sig);
+    return sigprocmask(SIG_SETMASK, &sa.sa_mask, NULL);
 }
 
 int my_sigignore(int sig)
 {
-    // sa.__sigaction_handler = SIG_IGN;
+    SYNC_SA;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
     return sigaction(sig, &sa, NULL);
@@ -42,6 +53,7 @@ int my_sigignore(int sig)
 
 int my_sigpause(int sig)
 {
+    SYNC_SA;
     sigdelset(&sa.sa_mask, sig);
     return sigsuspend(&sa.sa_mask);
 }
