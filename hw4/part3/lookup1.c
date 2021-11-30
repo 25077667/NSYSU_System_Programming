@@ -25,7 +25,11 @@ int lookup(Dictrec *sought, const char *resource)
             continue;
         const char *word = strtok(buf, " ");
         if (!strcmp(word, sought->word)) {  // found
-            strcpy(sought->text, strtok(NULL, "\n"));
+            char *text = buf + strlen(word);
+            while (!(*text)) {
+                ++text;
+            }
+            strcpy(sought->text, ++text);
             fclose(res_rec);
             return FOUND;
         }

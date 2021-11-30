@@ -68,8 +68,8 @@ int main(int argc, char **argv)
         /* Write record out to file.
          *
          * Fill in code. */
-        fwrite(rec.word, 1, strlen(rec.word), out);
-        fwrite(rec.text, 1, strlen(rec.text), out);
+        fwrite(rec.word, 1, sizeof(rec.word), out);
+        fwrite(rec.text, 1, sizeof(rec.text), out);
         fwrite("\n", 1, 1, out);
     }
 
