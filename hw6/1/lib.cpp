@@ -14,7 +14,7 @@ std::string buf;
 
 inline std::string get_dir(const std::string &path, int base)
 {
-    return path.substr(0, base + 2);
+    return path.substr(0, base + 3);
 }
 }  // namespace
 
