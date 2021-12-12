@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "cstring": "cpp",
-        "cctype": "cpp"
+        "cctype": "cpp",
+        "msg.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     }
 }
