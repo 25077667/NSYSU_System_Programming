@@ -1,5 +1,5 @@
 CC = gcc                                                                  
-CFLAGS = -DGEN_DATA -std=gnu11 -Wall -Wextra -Werror -O3
+CFLAGS = -std=gnu11 -Wall -Wextra -Werror -O3
 EXE = main.elf
 SRC = $(wildcard ./*.c)
 OBJ = $(patsubst %.c, %.o, $(SRC))
