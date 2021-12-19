@@ -17,6 +17,6 @@ B=$(seq 10)
 for b in ${B[@]}; do
     for c in ${C[@]}; do
         rate=$(./main.elf 1000 500 $c $b)
-        echo "$b $c ${rate}" >>result
+        echo "$b $c ${rate}" >>result1
     done
 done
