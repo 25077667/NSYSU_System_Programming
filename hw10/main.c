@@ -11,10 +11,10 @@
 #include "Producer.h"
 
 struct Tuple {
-    unsigned int data_num;
-    useconds_t sleep_time;
-    unsigned int consumer_num;
-    unsigned int buffer_num;
+    const unsigned int data_num;
+    const useconds_t sleep_time;
+    const unsigned int consumer_num;
+    const unsigned int buffer_num;
 };
 
 #define Wunused(expr)   \
@@ -55,8 +55,7 @@ end:
     return failed_sum;
 }
 
-int main(int argc, char *argv[])
-{
+struct Tuple get_argv(int argc, char *argv[]) {
     if (argc != 5) {  // On err
         static const char *help_str =
             "Usage: %s [M] [R] [N] [B]\n"
@@ -67,12 +66,18 @@ int main(int argc, char *argv[])
         fprintf(stderr, help_str, argv[0]);
         exit(-1);
     }
-
     const struct Tuple t = {.data_num = atoi(argv[1]),
                             .sleep_time = atoi(argv[2]),
                             .consumer_num = atoi(argv[3]),
                             .buffer_num = atoi(argv[4])};
-    char SHM_FILE[128] = {0};
+    return t;
+}
+
+int main(int argc, char *argv[])
+{
+    const struct Tuple t = get_argv(argc, argv);
+
+    static char SHM_FILE[128] = {0};
     snprintf(SHM_FILE, 128, "/DEADBEAF%d_%d_%d_%d", t.data_num, t.sleep_time,
              t.consumer_num, t.buffer_num);
     const int shm_fd = shm_open(SHM_FILE, O_RDWR | O_CREAT, S_IRWXU | S_IRWXG);
@@ -80,7 +85,7 @@ int main(int argc, char *argv[])
         (t.buffer_num + 1) * sizeof(struct Broadcast);
 
     Wunused(ftruncate(shm_fd, REAL_BROADCAST_SIZE));
-    struct Broadcast *b_array = (struct Broadcast *) mmap(
+    struct Broadcast *const b_array = (struct Broadcast *) mmap(
         NULL, REAL_BROADCAST_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd,
         0);
     memset(b_array, 0, REAL_BROADCAST_SIZE);
@@ -88,11 +93,11 @@ int main(int argc, char *argv[])
     int n = t.consumer_num;
     while (n--) {       // Childs are consumers
         if (!fork()) {  // Child
-            struct Consumer c = {.work_id = n,
-                                 .data_num = t.data_num,
-                                 .buffer_num = t.buffer_num,
-                                 .buf = b_array,
-                                 .job = consumer_job};
+            const struct Consumer c = {.work_id = n,
+                                       .data_num = t.data_num,
+                                       .buffer_num = t.buffer_num,
+                                       .buf = b_array,
+                                       .job = consumer_job};
 #ifdef DEBUG_CONSUMER
             fprintf(stderr, "gen c %d\n", n);
 #endif
@@ -107,11 +112,11 @@ int main(int argc, char *argv[])
     }
 
     if (!fork()) {  // Create producer process
-        struct Producer p = {.message_num = t.data_num,
-                             .sleep_time = t.sleep_time,
-                             .buffer_num = t.buffer_num,
-                             .buf = b_array,
-                             .job = producer_job};
+        const struct Producer p = {.message_num = t.data_num,
+                                   .sleep_time = t.sleep_time,
+                                   .buffer_num = t.buffer_num,
+                                   .buf = b_array,
+                                   .job = producer_job};
         p.job(&p);
         exit(0);
     }

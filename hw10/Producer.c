@@ -1,7 +1,7 @@
 #include "Producer.h"
 #include <stdio.h>
 
-static inline void write_msg(struct Broadcast *bc, int i)
+static inline void write_msg(struct Broadcast *const bc, int i)
 {
     snprintf(bc->buffer, 256, "This is message %d\n", i);
 #ifdef DEBUG_PRODUCER
@@ -15,7 +15,7 @@ static inline void delay(useconds_t us)
     usleep(us * 1000);
 }
 
-void producer_job(struct Producer *this)
+void producer_job(const struct Producer *const this)
 {
     struct Broadcast *const bc_arr = this->buf;
     for (int i = 0; i < this->message_num; i++) {
@@ -23,5 +23,6 @@ void producer_job(struct Producer *this)
         write_msg(&bc_arr[i % this->buffer_num], i);
     }
     // Final chunk of Broadcast
+    delay(this->sleep_time);
     write_msg(&bc_arr[this->message_num % this->buffer_num], -1);
 }

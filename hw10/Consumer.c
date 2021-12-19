@@ -1,10 +1,14 @@
 #include "Consumer.h"
+#if defined(DEBUG_CONSUMER_J) || defined(DEBUG_CONSUMER_RET)
 #include <stdio.h>
-static int counter = 0;
-static int prev = -1;
+#endif
+#define __glibc_unlikely(cond) __builtin_expect((cond), 0)
 
-int consumer_job(struct Consumer *this)
+int consumer_job(const struct Consumer *const this)
 {
+    int counter = 0;
+    int prev = -1;
+
     const struct Broadcast *const bc_arr = this->buf;
     for (unsigned int i = 0;;) {
         const int cur = bc_arr[i].data_in;
