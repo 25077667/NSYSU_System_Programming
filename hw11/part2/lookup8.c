@@ -4,39 +4,38 @@
  * The name of the server is passed as resource. PORT is defined in dict.h
  */
 
-#include <sys/types.h>
-#include <sys/socket.h>
+#include <fcntl.h>
 #include <netdb.h>
-#include <netinet/in.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 #include "dict.h"
 
-int lookup(Dictrec * sought, const char * resource) {
-	static int sockfd;
-	static struct sockaddr_in server;
-	struct hostent *host;
-	static int first_time = 1;
+static int ser_fd;
 
-	if (first_time) {        /* connect to socket ; resource is server name */
-		first_time = 0;
+int my_connect(const char *name)
+{
+    const struct hostent *hp = gethostbyname(name);
+    ser_fd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in host = {.sin_family = AF_INET,
+                               .sin_port = htons(PORT),
+                               .sin_addr = {*((unsigned long *) hp->h_addr)},
+                               .sin_zero = {0}};
+    return connect(ser_fd, (const struct sockaddr *) &host, sizeof(host));
+}
 
-		/* Set up destination address. */
-		server.sin_family = AF_INET;
-		/* Fill in code. */
+int lookup(Dictrec *sought, const char *resource)
+{
+    (void) resource;
+    Wunused(write(ser_fd, sought->word, strlen(sought->word) + 1));
+    return read(ser_fd, sought->text, sizeof(sought->text));
+}
 
-		/* Allocate socket.
-		 * Fill in code. */
-
-		/* Connect to the server.
-		 * Fill in code. */
-	}
-
-	/* write query on socket ; await reply
-	 * Fill in code. */
-
-	if (strcmp(sought->text,"XXXX") != 0) {
-		return FOUND;
-	}
-
-	return NOTFOUND;
+int my_disconnect(void)
+{
+    close(ser_fd);
+    return 0;
 }

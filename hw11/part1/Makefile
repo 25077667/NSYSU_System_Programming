@@ -3,8 +3,8 @@ O_CLI=usock_cilent
 O_SER=usock_server
 
 all: ${O_CLI} ${O_SER}
-	# strip ${O_CLI}  
-	# strip ${O_SER}
+	strip ${O_CLI}  
+	strip ${O_SER}
 
 ${O_SER}: lookup5.o usock_server.c
 	gcc lookup5.o usock_server.c -o ${O_SER} ${FLAGS}
