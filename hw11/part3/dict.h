@@ -12,6 +12,8 @@
 #define NOTFOUND 0
 #define UNAVAIL -1
 
+#define PORT 40000
+
 #define DIE(x) perror(x), exit(1)
 #define EE(expr)                       \
     do {                               \

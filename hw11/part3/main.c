@@ -13,29 +13,46 @@
  */
 
 #include <errno.h>
+#include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "dict.h"
 
-int main(int argc, char **argv) {
-	FILE *in;
-	char word[WORD];
-	Dictrec tryit;
+static int clientId;
 
-	if (argc != 2) {
-		fprintf(stderr,"Usage : %s <resource>\n",argv[0]);
-		exit(errno);
-	}
+static void __clean_clientId(int sig)
+{
+    (void) sig;
+    close(clientId);
+}
 
-	while(fputs("What word do you want : ",stderr),gets(tryit.word)) {
-		switch(lookup(&tryit,argv[1]) ) {
-			case FOUND:
-				printf("%s : %s",tryit.word,tryit.text);
-				break;
-			case NOTFOUND:
-				printf("%s : Not Found!\n",tryit.word) ;
-				break;
-			case UNAVAIL:
-				DIE(argv[1]);
-		}
-	}
+static inline void init_sig_handle()
+{
+    struct sigaction sa = {.sa_flags = 0, .sa_handler = __clean_clientId};
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+}
+
+int main(int argc, char **argv)
+{
+    init_sig_handle();
+    if (argc != 2) {
+        fprintf(stderr, "Usage : %s <resource>\n", argv[0]);
+        exit(errno);
+    }
+    const char *const HOSTNAME = argv[1];
+
+    EE(my_connect(HOSTNAME));
+    while (fputs("What word do you want : ", stderr)) {
+        Dictrec try_it;
+        if (fgets(try_it.word, WORD, stdin) == NULL)
+            break;
+        try_it.word[strlen(try_it.word) - 1] = 0;  // strip the newline
+        (void) lookup(&try_it, HOSTNAME);
+        printf("%s : %s", try_it.word, try_it.text);
+    }
+    EE(my_disconnect());
+    return 0;
 }
