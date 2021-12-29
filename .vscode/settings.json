@@ -5,6 +5,10 @@
         "msg.h": "c",
         "array": "c",
         "string": "c",
-        "string_view": "c"
+        "string_view": "c",
+        "fs.h": "c",
+        "kdev_t.h": "c",
+        "kernel.h": "c",
+        "module.h": "c"
     }
 }
