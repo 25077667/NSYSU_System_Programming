@@ -1,10 +1,10 @@
 #ifndef ARG_H
 #define ARG_H
 
-// The buf cannot contains -1 (0xff)
 struct Arg {
     char *const buf;
     void *const sem;
+    _Atomic unsigned int len;
 };
 
 #ifndef BUFSIZE
